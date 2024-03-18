@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -206,6 +207,11 @@ func main() {
 	bjson, _ := json.Marshal(jsonObj)
 	fmt.Println("\njsonObj序列化后为：", string(bjson))
 
+	// try catch
+
+	//
+	err := fmt.Errorf("fmt Errorf: %w", errors.New("test error fmt"))
+	fmt.Println(err)
 }
 
 // 在struct中定义序列化和反序列化字段
