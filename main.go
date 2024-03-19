@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -207,11 +209,191 @@ func main() {
 	bjson, _ := json.Marshal(jsonObj)
 	fmt.Println("\njsonObj序列化后为：", string(bjson))
 
-	// try catch
-
-	//
 	err := fmt.Errorf("fmt Errorf: %w", errors.New("test error fmt"))
-	fmt.Println(err)
+	fmt.Println(err, "\n")
+
+	// json json.Unmarshal 反序列化时接收的是 []byte 字符数组
+	// json json.NewDecoder 从流中进行解码
+	jsonResp1 := new(JsonLogResponse)
+	json.NewDecoder(strings.NewReader(jsonStr)).Decode(jsonResp1)
+	fmt.Println("json.NewDecoder -> jsonResp1=", jsonResp1)
+
+	// defer : defer是go中一种延迟调用机制，defer后面的函数只有在当前函数执行完毕后才能执行，将延迟的语句按defer的逆序进行执行，
+	//也就是说先被defer的语句最后被执行，最后被defer的语句，最先被执行，通常用于释放资源
+	// 多个defer多话，从后往前执行
+	// 先输出“echo return”后输出“defer echo1”，意味着先return后执行defer函数
+	echo()
+	// defer 最大的功能是 panic 后依然有效,所以defer可以保证你的一些资源一定会被关闭，从而避免一些异常出现的问题
+	//deferPanic()
+
+	// 对于指针数组是要求数组里面都是int类似变量的指针，用string类型的不行，它不仅要存指针还要对变量类型做校验的
+	//var ptr []*int
+	//i := "str"
+	//append(ptr, &i)
+
+	// interface
+	//在 golang中，只要interface中任意一个方法，被interface继承或者被struct的func实现，都是这个interface的实现类
+	// golang 完全是通过函数名称是不是一样来决定是不是一个接口的实现
+
+	//关于值传递和引用传递
+	// 不用指针的话就是值传递，一般在方法上，或者函数输入输出上会看到加*号的对象
+	// 指针就是类似引用传递. 一般要修改对象的话就让传指针，否则就值传递就行
+
+	// errors.New(strconv.Itoa(status))
+	// strconv 主要用于字符串和基本数据类型之间的相互转换
+	str12 := "123"
+	atoi, err := strconv.Atoi(str12) // 字符串转int
+	fmt.Println(atoi)
+	atoi += 1
+	str122 := strconv.Itoa(atoi) // int转字符串
+	fmt.Println(str122)
+
+	var bytel = []byte("1")
+	strconv.AppendInt(bytel, 3, 10)
+	fmt.Println(bytel)
+	// strconv 中 base的解释。
+	// 根据base，基数的不同输出的不同。base 的选择（例如，二进制，十进制、十六进制等）
+	var strconvD int64 = 32
+	strconvDS2 := strconv.FormatInt(strconvD, 2)
+	strconvDS10 := strconv.FormatInt(strconvD, 10)
+	strconvDS16 := strconv.FormatInt(strconvD, 16)
+	fmt.Println("int64转string-2进制：", strconvDS2)  //1100100
+	fmt.Println("int64转string-10进制", strconvDS10) //100
+	fmt.Println("int64转string-16进制", strconvDS16) //20
+
+	strconvDS2 = "10"
+	//把字符串转成int，base表明字符串是多少进制的，bitSize说明你转成这个int的范围
+	//the result must fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int, int8, int16, int32, and int64
+	parseInt, _ := strconv.ParseInt(strconvDS2, 2, 0)                             // 说明我要给你转换的字符串是一个2进制的
+	fmt.Printf("\nstring转int,2进制. 原字符串=%v, parseInt后=%v\n", strconvDS2, parseInt) //用2进制表示的10，则值为2
+	strconvDS2 = "17"                                                             //这个值根据下面base，下面base是8，则是8进制，则这个地方每个位上的数字不能大于8，大于8则会返回0
+	parseInt1, _ := strconv.ParseInt(strconvDS2, 8, 32)
+	fmt.Printf("\nstring转int,8进制. 原字符串=%v, parseInt后=%v\n", strconvDS2, parseInt1) //用8进制表示的8
+
+	// map
+	map1 := map[string]string{
+		"name": "rick",
+		"age":  "18",
+	}
+	s, ok := map1["name"]
+	fmt.Println(ok)
+	if ok {
+		fmt.Println("map s = ", s)
+	}
+
+	// 创建固定长度的数组.
+	x1 := [2]int{}
+	fmt.Println("x1=", x1)
+	x2 := make([]int, 2)
+	fmt.Println("x2=", x2)
+
+	//数组切片 [:] 切片后要重新赋值回原数组
+	x21 := []int{1, 2, 3, 4, 5}
+	fmt.Printf("\nx21=%v", x21)
+	x21 = x21[:3] // [1 2 3]
+	fmt.Printf("\n从开始取到第三位 x21[:3]=%v", x21)
+	x21 = []int{1, 2, 3, 4, 5}
+	x21 = x21[1:] // [2 3 4 5]
+	fmt.Printf("\n从第一个开始往后取 x21[1:]=%v", x21)
+	x21 = []int{1, 2, 3, 4, 5}
+	x21 = x21[2:4] // [3 4]
+	fmt.Printf("\n从第二个往后选，选到第四位 x21[2:4]=%v", x21)
+
+	// range带 index.
+	// append 往上面 x1和x2插入时，因为长度是固定的，而且有默认值，所以没有地方去插入了，所以不能插入
+	x3 := []int{1, 2, 3, 4} // append不能为空
+	x3 = append(x3, 5)
+	for i, _ := range x1 {
+		fmt.Printf("\nx1 range: index=%v, value=%v", i, x3[i])
+	}
+	fmt.Println("\nx3=", x3)
+	// 利用 append 去删除元素
+	// 原理：拿到要删除的值的前面的分片，然后用这个值后面到末尾的一个分片去append进去，就把要删除的那个位置覆盖掉，从而达到删除的目的
+	x3 = append(x3[:2], x3[3:]...)
+	fmt.Println("利用 append delete 后x3=", x3)
+
+	//对象类型 - 只针对 any 或者 interface{} 类型的变量，才能获取type
+	var objType anyType = 123
+	switch t := objType.(type) {
+	case string:
+		fmt.Println("objType is string.t=", t)
+	case int:
+		fmt.Println("objType is int.t=", t)
+	}
+	// 在 Go 中，类型断言使用 x.(T) 的语法进行，其中 x 是接口类型的变量，也可以是any类型的，T 是具体的类型
+	if _, ok := objType.(int); ok {
+		fmt.Println("objType is int... by objType.(int)")
+	}
+
+	// 别的包里的属性，用 type 去创建一个属性，不同于 struct 中的属性，这个是go文件里面的属性
+	values := Values{
+		"key": []string{"a", "b"},
+	}
+	fmt.Println("别的包中定义的属性. values=", values)
+
+}
+
+// 用来验证 switch t := objType.(type)
+type anyType any
+
+// interface
+type Animal interface {
+	engine
+	name() string
+	run()
+	eat()
+}
+type Dog struct{}
+
+func (d Dog) run() {
+	fmt.Println("dog run")
+}
+
+// 接口用作依赖注入
+type Database interface {
+	Connect() error
+	Disconnect() error
+	Query(string) ([]byte, error)
+}
+type User struct{}
+type UserRepository struct {
+	db Database
+}
+
+func (r UserRepository) GetUser(id int) (*User, error) {
+	data, err := r.db.Query(fmt.Sprintf("SELECT * FROM users WHERE id = %d", id))
+	if err != nil {
+		return nil, err
+	}
+	// parse data and return User object
+	fmt.Println(data)
+	return nil, nil
+}
+
+// defer
+func echo() string {
+	defer echo1()
+	defer echo2()
+	defer echo3()
+	return EchoReturn()
+}
+func EchoReturn() string {
+	fmt.Println("echo return")
+	return "echo return"
+}
+func echo1() string {
+	fmt.Println("defer echo1")
+	return "echo1"
+}
+func echo2() {
+	fmt.Println("echo2")
+}
+func echo3() {
+	fmt.Println("echo3")
+}
+func deferPanic() {
+	defer echo1()
+	panic("panic ....")
 }
 
 // 在struct中定义序列化和反序列化字段
@@ -249,7 +431,7 @@ type Bicycle interface {
 	drive()
 }
 
-// struct 对象的 继承
+// struct 对象的 “继承”，其实在golang中这个是 组合
 // People 是 OnlyType的一个属性，也可以直接调用people中的字段
 type OnlyType struct {
 	People
