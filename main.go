@@ -71,7 +71,7 @@ func main() {
 
 	// strings 中的方法
 
-	// 读文件 os.Open(caCert) io.Reader
+	// 读文件 os.Open(caCert) io-demo.Reader
 
 	// 范型
 	var m1 MyMap[int, string] = map[int]string{
